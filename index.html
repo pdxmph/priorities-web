@@ -7,7 +7,7 @@
     
     <!-- PWA Meta -->
     <meta name="theme-color" content="#3b82f6">
-    <link rel="manifest" href="data:application/json;charset=utf-8,{%22name%22:%22Priorities%22,%22short_name%22:%22Priorities%22,%22start_url%22:%22/%22,%22display%22:%22standalone%22,%22background_color%22:%22%23ffffff%22,%22theme_color%22:%22%233b82f6%22,%22icons%22:[{%22src%22:%22data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iNDAiIGZpbGw9IiMzYjgyZjYiLz4KPHN2ZyB4PSI0OCIgeT0iNDgiIHdpZHRoPSI5NiIgaGVpZ2h0PSI5NiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiPgo8cGF0aCBkPSJtMyAxNyA2IDYgNC00IDggOCIvPgo8L3N2Zz4KPC9zdmc+%22,%22sizes%22:%22192x192%22,%22type%22:%22image/svg+xml%22}]}">
+    <link rel="manifest" href="data:application/json;charset=utf-8,{%22name%22:%22Priorities%22,%22short_name%22:%22Priorities%22,%22start_url%22:%22/%22,%22display%22:%22standalone%22,%22background_color%22:%22%23ffffff%22,%22theme_color%22:%22%233b82f6%22,%22icons%22:[{%22src%22:%22data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjE5MiIgaGVpZ2h0PSIxOTIiIHJ4PSI0MCIgZmlsbD0iIzNiODJmNiIvPjxjaXJjbGUgY3g9Ijk2IiBjeT0iNzIiIHI9IjI0IiBmaWxsPSJ3aGl0ZSIvPjxjaXJjbGUgY3g9Ijk2IiBjeT0iMTEyIiByPSIxNiIgZmlsbD0id2hpdGUiLz48Y2lyY2xlIGN4PSI5NiIgY3k9IjE0MCIgcj0iMTAiIGZpbGw9IndoaXRlIi8+PC9zdmc+%22,%22sizes%22:%22192x192%22,%22type%22:%22image/svg+xml%22}]}">
     
     <!-- Include FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -50,6 +50,11 @@
             padding: 2rem;
             max-width: 800px;
             margin: 0 auto;
+        }
+        
+        .show-add-goal {
+            text-align: center;
+            margin-bottom: 2rem;
         }
         
         .add-goal {
@@ -169,6 +174,11 @@
             background: #f0fdf4;
         }
         
+        .goal-item.over-invested {
+            border-color: #8b5cf6;
+            background: #faf5ff;
+        }
+        
         .goal-header {
             display: flex;
             justify-content: between;
@@ -258,6 +268,11 @@
             background: #f0fdf4;
         }
         
+        .metric.over-invested.active {
+            border-color: #8b5cf6;
+            background: #faf5ff;
+        }
+        
         .metric-value {
             font-size: 1.5rem;
             font-weight: 700;
@@ -298,7 +313,11 @@
         </div>
         
         <div class="content">
-            <div class="add-goal">
+            <div class="show-add-goal" id="showAddGoalButton">
+                <button class="btn" onclick="app.showAddGoalForm()"><i class="fas fa-plus"></i> Add New Goal</button>
+            </div>
+            
+            <div class="add-goal" id="addGoalSection" style="display: none;">
                 <h3 style="margin-bottom: 1rem;">Add New Goal</h3>
                 <form id="goalForm">
                     <div class="form-group">
@@ -329,7 +348,10 @@
                         </div>
                     </div>
                     
-                    <button type="submit" class="btn">Add Goal</button>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button type="submit" class="btn"><i class="fas fa-plus"></i> Add Goal</button>
+                        <button type="button" class="btn btn-secondary" onclick="app.hideAddGoalForm()"><i class="fas fa-times"></i> Cancel</button>
+                    </div>
                 </form>
             </div>
             
@@ -356,6 +378,18 @@
                 this.render();
             }
             
+            showAddGoalForm() {
+                document.getElementById('addGoalSection').style.display = 'block';
+                document.getElementById('showAddGoalButton').style.display = 'none';
+                document.getElementById('goalName').focus();
+            }
+            
+            hideAddGoalForm() {
+                document.getElementById('addGoalSection').style.display = 'none';
+                document.getElementById('showAddGoalButton').style.display = 'block';
+                document.getElementById('goalForm').reset();
+            }
+            
             loadGoals() {
                 const stored = localStorage.getItem('priorities-goals');
                 return stored ? JSON.parse(stored) : [];
@@ -379,7 +413,7 @@
                 this.goals.push(goal);
                 this.saveGoals();
                 this.render();
-                form.reset();
+                this.hideAddGoalForm();
             }
             
             deleteGoal(id) {
@@ -452,7 +486,8 @@
                 if (gap === null) return 'unknown';
                 if (gap >= 2) return 'critical';
                 if (gap === 1) return 'warning';
-                return 'good';
+                if (gap === 0) return 'good';
+                return 'over-invested';
             }
             
             getPriorityDisplay(priority) {
@@ -490,9 +525,9 @@
             
             calculateMetrics() {
                 const total = this.goals.length;
-                if (total === 0) return { total: 0, critical: 0, warning: 0, good: 0, avgGap: 0 };
+                if (total === 0) return { total: 0, critical: 0, warning: 0, good: 0, overInvested: 0, avgGap: 0 };
                 
-                let critical = 0, warning = 0, good = 0;
+                let critical = 0, warning = 0, good = 0, overInvested = 0;
                 const gaps = [];
                 
                 this.goals.forEach(goal => {
@@ -502,13 +537,14 @@
                     if (risk === 'critical') critical++;
                     else if (risk === 'warning') warning++;
                     else if (risk === 'good') good++;
+                    else if (risk === 'over-invested') overInvested++;
                     
                     if (gap !== null) gaps.push(gap);
                 });
                 
                 const avgGap = gaps.length > 0 ? (gaps.reduce((a, b) => a + b, 0) / gaps.length).toFixed(1) : 0;
                 
-                return { total, critical, warning, good, avgGap };
+                return { total, critical, warning, good, overInvested, avgGap };
             }
             
             renderAnalysis() {
@@ -518,7 +554,7 @@
                 const filterButton = (type, count, label, icon, color = '#3b82f6') => {
                     const isActive = this.currentFilter === type;
                     const activeClass = isActive ? 'active' : '';
-                    const typeClass = type === 'critical' ? 'critical' : type === 'warning' ? 'warning' : type === 'good' ? 'good' : '';
+                    const typeClass = type === 'critical' ? 'critical' : type === 'warning' ? 'warning' : type === 'good' ? 'good' : type === 'over-invested' ? 'over-invested' : '';
                     
                     return `
                         <div class="metric ${typeClass} ${activeClass}" onclick="app.setFilter('${type}')" title="Click to filter">
@@ -538,6 +574,7 @@
                         ${filterButton('critical', metrics.critical, 'Critical', 'fas fa-exclamation-triangle', '#ef4444')}
                         ${filterButton('warning', metrics.warning, 'Attention', 'fas fa-bolt', '#f59e0b')}
                         ${filterButton('good', metrics.good, 'Aligned', 'fas fa-check', '#10b981')}
+                        ${filterButton('over-invested', metrics.overInvested, 'Over-invested', 'fas fa-chart-line', '#8b5cf6')}
                     </div>
                                     ${this.currentFilter !== 'all' ? `
                         <div style="text-align: center; margin-top: 1rem;">
@@ -560,6 +597,7 @@
                     case 'critical': return 'Critical Gaps';
                     case 'warning': return 'Need Attention';
                     case 'good': return 'Well-Aligned';
+                    case 'over-invested': return 'Over-invested';
                     case 'unknown': return 'Unknown';
                     default: return 'All Goals';
                 }
@@ -579,7 +617,10 @@
                     </div>`;
                 }
                 
-                return filteredGoals.map(goal => {
+                // Sort by newest first (reverse chronological order)
+                const sortedGoals = filteredGoals.sort((a, b) => b.id - a.id);
+                
+                return sortedGoals.map(goal => {
                     const gap = this.calculateGap(goal);
                     const risk = this.getRiskLevel(gap);
                     const message = this.getGapMessage(goal);
